@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SalStocks</title>
+<script src="https://kit.fontawesome.com/0d45b632d9.js" crossorigin="anonymous"></script>
+<style>
+	.icon-bar{
+			/*This is a CSS comment*/
+		text-decoration:none;
+		background-color: #6A5ACD;
+		padding-top: 5px; /*Why is the padding for the top so big using regular padding.*/
+		padding-right: 20px;
+		padding-left: 20px;
+		padding-bottom: 5px;
+		display: flex;
+			/* period is for class and hashtag is for id https://forums.asp.net/t/1556629.aspx?what+does+this+mean+and+in+CSS+file+*/
+	}
+
+	.left-align{
+		flex:2 1 200px; /*Fill up the available space, flex grow, flex shrink, flex basis*/
+	}
+
+	a:link{
+		text-decoration: none;
+		color: #CAC4ED;
+	}
+
+	a:hover{
+		text-decoration: none;
+		border: 1px solid #CAC4ED;
+	}
+
+	a:visited{
+		color: #CAC4ED;
+	}
+
+	.column{
+		margin-left: 25%
+	}
+
+	.grey{
+		background-color: #e0e0eb;
+		border:1px solid #666699;
+		width: 65%;
+	}
+
+	.white{
+		border-right: 1px solid #666699;
+		border-left: 1px solid #666699;
+		width: 65%;
+		height: 70px;
+		
+
+	}
+
+	.column-inside{
+		width: 45%;
+		margin-top: 5px;
+		margin-left: 12px;
+		float:left;
+	}
+</style>
+
+<script>
+function loadPortfolio(){
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+				document.getElementById("portfolio").innerHTML = "";
+				
+				var portfolio = JSON.parse(this.responseText);
+			
+				loadAccountInfo();
+				if(portfolio.length === 0){
+					//alert("There is nothing to show");
+					return false;
+				}
+				for(var i = 0; i < portfolio.length; i++){
+					var obj = portfolio[i];
+					var finalStr = "<div class = \"column\">"
+					+"<div class = \"grey\" style = \"text-align:left\" >"
+						+"<p id = \"tickerBasicInfo\" style: \"margin-left:5px;\">" + obj.stockTicker + "   "+ obj.stockCompany + "</p>"
+					+"</div>"
+					+"<div class = \"white\" style = \"position: flex\">"
+						+"<div class = \"column-inside\">Quantity:"
+							+"<div style = \"float:right;\">" + obj.quantity + "</div>"
+							+"<br>Avg. Cost / Share:"
+							+"<div style = \"float:right;\">" + obj.averageCost + "</div>"
+							+"<br>Total Cost:"
+							+"<div style = \"float:right;\">" + obj.totalCost + "</div></div>";
+					var color;
+					if(obj.change === "0.0"){
+						color = "#000000";
+						finalStr += "<div class = \"column-inside\">Change:";
+						finalStr += "<div style = \"float:right; color: #000000\">" + obj.change + "</div>";
+					}else if(obj.change > "0"){
+						color = "#00cc66";
+						finalStr += "<div class = \"column-inside\">Change:";
+						finalStr += "<div style = \"float:right; color: #00cc66\"><i class=\"fas fa-caret-up\" style = \"color: #00cc66\" ></i>" + obj.change + "</div>";
+					}else{
+						color = "#fc3503";
+						finalStr += "<div class = \"column-inside\" >Change:";
+						finalStr += "<div style = \"float:right;color: #fc3503\" ><i class=\"fas fa-caret-down\" style = \"color: #fc3503\" ></i>" + obj.change + "</div>";
+					}
+							
+						finalStr += "<br>Current Price:"
+							+"<div style = \"float:right; color: " + color +"\">" + obj.currentPrice + "</div>"
+							+"<br>Market Value:"
+							+"<div style = \"float:right; color: " + color +"\">" + obj.marketValue + "</div></div></div>"
+					+"<div class = \"grey\" style = \"text-align:center\">"
+						+"<p id = \"buySell\">Quantity"
+							+"<input = \"text\" style = \"width:15px\" id = \'" + obj.stockTicker + "\'></input><br>"
+							+"<input type = \"radio\" id=\"Buy"+obj.stockTicker+"\" name=\"selection\" value = \"Buy\">"
+							+"<label for=\"buy\">buy</label>"
+							+"<input type = \"radio\" id=\"Sell"+obj.stockTicker+"\" name=\"selection\" value = \"Sell\">"
+						  	+"<label for=\"sell\">sell</label><br>"
+							+"<input type=\"submit\" onclick = \"buysell(\'" + obj.stockTicker+ "\', \'" + obj.stockCompany +  "\',\'" + obj.currentPrice + "\', \'" + obj.quantity+"\')\"></input>"
+						+"</p></div></div><br>"
+					document.getElementById("portfolio").innerHTML += finalStr;
+				}
+			}
+		}
+	}
+	xmlhttp.open("POST", "Portfolio", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.send("field=loadPortfolio&UID=" + sessionStorage.getItem("UID")); 
+}
+
+function loadAccountInfo(){
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+			
+				var portfolio = JSON.parse(this.responseText);
+				
+				document.getElementById("cashBalance").innerHTML = "Cash Balance: " + portfolio.cashBalance;
+				document.getElementById("accountValue").innerHTML = "Total Account Value: " + portfolio.totalAccountValue;
+			}
+		}
+	}
+	xmlhttp.open("POST", "Portfolio", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.send("field=loadAccountInfo&UID=" + sessionStorage.getItem("UID")); 
+	
+
+}
+
+function buysell(ticker, tickerName, currentPrice, availQuant){
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+				loadPortfolio();
+				
+			}
+		}
+	}
+	xmlhttp.open("POST", "Portfolio", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	var amount = document.getElementById(ticker).value;
+	if (!Number.isInteger(+amount)){
+		alert("Please enter a integer value");
+		return false;
+	}
+	if(amount <= 0){
+		alert("Please enter a positive value");
+		return false;
+	}
+	
+	
+	var str = "field=buysell&ticker=" + ticker + "&UID=" + sessionStorage.getItem("UID") + "&quantity=" + amount + "&tickerName=" + tickerName + "&total=" + currentPrice;
+	if(document.getElementById("Buy" + ticker).checked) {
+		str += "&type=buy";
+	}else if(document.getElementById("Sell" + ticker).checked) {
+		if(parseInt(amount) > parseInt(availQuant)){
+			
+			alert("Please enter stock amount below " + availQuant);
+			return false;
+		}
+		str += "&type=sell";
+	}else{
+		alert("Please select type: buy or sell");
+		return false;
+	}
+	xmlhttp.send(str);
+	loadPortfolio();
+}
+</script>
+
+</head>
+<header>
+	<div class = "icon-bar" >
+		<div class = "left-align">
+		<a href = "Home" style = "color: #FFFFFF; " >SalStocks</a>
+		</div>
+
+		<div id = "changeableBar">
+			<a href = "Home" style = "margin-right: 5px" >Home/Search</a>
+			<a href = "Favorite" style = "margin-right: 5px" >Favorite</a>
+			<a href = "Portfolio" style = "margin-right: 5px" >Portfolio</a>
+			<a href = "Login" >Logout</a>
+		</div>
+	</div>
+</header>
+
+<body onload = "loadPortfolio()">
+	<div class = "column">
+		<h3>My Portfolio</h3>
+		<p id = "accountInfo">
+			<div id = "cashBalance">
+			Cash Balance:
+			</div>
+			<br>
+			<div id = "accountValue">
+			Total Account Value:
+			</div>
+		</p>
+	</div>
+	<div id = "portfolio"></div>
+</body>
+<html>

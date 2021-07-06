@@ -1,0 +1,227 @@
+<html>
+<head>
+<meta name="google-signin-scope" content="profile email">
+<meta name="google-signin-client_id" content="304906411016-kv2jh7vsjkp7ep6f3301vg8oguadca9n.apps.googleusercontent.com">
+<title>SalStocks</title>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<style>
+	.column{
+		width: 75%;
+		margin: 0px auto;
+	}
+
+	.column-inside{
+		width: 50%;
+		margin:0;
+		float:left;
+	}
+	
+	.login-button{
+		color: #FFFFFF;
+		background-color: #A93226;
+		border: none;
+		text-align: center;
+		width: 225px;
+		height: 25;
+	}
+	
+	.left-align{
+		text-decoration: none;
+		flex:2 1 200px; 
+	}
+	
+	.icon-bar{
+		/*This is a CSS comment*/
+		text-decoration: none;
+		background-color: #6A5ACD;
+		padding-top: 5px; /*Why is the padding for the top so big using regular padding.*/
+		padding-right: 20px;
+		padding-left: 20px;
+		padding-bottom: 5px;
+	 	display: flex;
+		/* period is for class and hashtag is for id https://forums.asp.net/t/1556629.aspx?what+does+this+mean+and+in+CSS+file+*/
+	}	
+	
+	a:visited{
+		text-decoration: none;
+		color: #CAC4ED;
+	}
+
+	a:hover{
+		text-decoration: none;
+		border: 1px solid #CAC4ED;
+	}	
+
+	a:link{
+		text-decoration: none;
+		color: #CAC4ED;
+	}
+</style>
+
+</head>
+
+<script>
+function login(event){
+	event.preventDefault();
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+				var message = JSON.parse(this.responseText);
+				var rst = message.result;
+				console.log(message);
+				if(rst == "success"){
+					sessionStorage.setItem("UID", message.UID);
+					location.href = "Home";
+				}else{
+					alert("Please make sure username or password is correct")
+				}
+			}
+		}
+	}
+	xmlhttp.open("POST", "Login", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.send("field=login&username=" + document.getElementById("username").value + "&password=" + document.getElementById("password").value );
+	//xmlhttp.send("field=login&username=root&password=root"); 
+	return false;
+}
+
+
+
+
+function signup(event){
+	event.preventDefault();//Stop refresh
+	
+	if(document.getElementById("passwordR").value !== document.getElementById("passwordCheck").value){
+		alert("Please make sure passwords match");
+		return false;
+	}
+	var em = document.getElementById("emailR").value;
+	if(!em.includes(".")){
+		alert("Please make sure email ends in .com or .edu or...");
+		return false;
+	}
+	
+
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+				var message = JSON.parse(this.responseText);
+				if(message.result === "success"){
+					console.log(message.UID);
+					sessionStorage.setItem("UID", message.UID);
+					location.href = "Home";
+				}else{
+					if(message.result === "taken"){
+						alert("Username is already taken, please choose another one");
+					}else if(message.result === "aregist"){
+						alert("This email is already registered, please log in");
+					}else{
+						alert("Error has occured, please try again");
+					}
+					return false;
+				}
+			}
+		}
+	}
+	xmlhttp.open("POST", "Login", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.send("field=signup&username=" + document.getElementById("userR").value + "&password=" + document.getElementById("passwordR").value 
+			+ "&email=" + document.getElementById("emailR").value);
+	return false;
+}
+
+function logout(){
+	if(sessionStorage.getItem("UID") !== null){
+		sessionStorage.removeItem("UID");
+		console.log(sessionStorage.removeItem("UID"));
+	}
+}
+
+/**/
+</script>
+
+<header>
+	<div class = "icon-bar" >
+		<div class = "left-align" >
+			<a href = "Home" style = "color: #FFFFFF; ">SalStocks</a>
+		</div>
+		<div id = "changeableBar">
+			<a href = "Home" style = "margin-right: 5px">Home/Search</a>
+			<a href = "Login" >Login/Sign Up</a>
+		</div>
+	</div>
+</header>
+<body onload = "logout()">
+	<div class = "column">
+		<div class = "column-inside">
+		<form  onsubmit = "login(event); return false">
+			<h1 >Login</h1>
+			<label for="username">Username</label><br>
+			<input type="text" style = "width: 250px" id = "username"required>
+			<br><label for="password">Password</label><br>
+			<input type="text" style = "width: 250px" id = "password" required>
+			<br></br>
+			<button type="submit" class = "login-button"><i class="fas fa-sign-in-alt"></i> Sign in</button>
+			<br></br>
+			<div class="g-signin2" data-onsuccess="onSignIn" ></div>
+			<script type="text/javascript">
+				function onSignIn(googleUser){
+					//console.log("google_login called");
+					var xmlhttp = new XMLHttpRequest();
+					var profile = googleUser.getBasicProfile();
+				
+					xmlhttp.onreadystatechange = function(){
+						if(xmlhttp.readyState === 4){
+							if(xmlhttp.status === 200){
+								var message = JSON.parse(this.responseText);
+								console.log(message);
+								var rst = message.result;
+								if(rst == "success"){
+									sessionStorage.setItem("UID", message.UID);
+									location.href = "Home";
+								}else{
+									document.getElementById("signInErrorMessage").innerHTML = message;
+								}
+							}
+						}
+					}
+					xmlhttp.open("POST", "Login", true);
+					xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+					xmlhttp.send("field=loginGoogle&email=" + profile.getEmail());
+					return false;
+				}
+			</script>
+			
+			
+			
+		</form>
+		<p id = "signInErrorMessage"></p>
+		</div>
+		
+	</div>
+	<div class = "column">
+		<div class = "column-inside">
+		<form onsubmit = "signup(event); return false" >
+			<h1>Sign up</h1>
+			<label for="emailR">Email</label><br>
+			<input type="email" style = "width: 250px" id = "emailR" required>
+			
+			<br><label for="userR">Username</label><br>
+			<input type="text" style = "width: 250px" id = "userR" required>
+			
+			<br><label for="passwordR">Password</label><br>
+			<input type="text" style = "width: 250px" id = "passwordR" required>
+			
+			<br><label for="passwordCheck">Confirm Password</label><br>
+			<input type="text" style = "width: 250px" id= "passwordCheck" required>
+			<br></br>
+			<p><input type="checkbox" required>I have read and agreed to all terms and conditions of SalStocks</p>
+			<button type="submit" class = "login-button" ><i class="fas fa-user-plus"></i> Create Account</button>
+			
+		</form>
+		</div>
+	</div>
+</body>
+</html>

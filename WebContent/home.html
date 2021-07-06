@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SalStocks</title>
+<script src="https://kit.fontawesome.com/0d45b632d9.js" crossorigin="anonymous"></script>
+<style>
+	.icon-bar{
+		/*This is a CSS comment*/
+		text-decoration:none;
+		background-color: #6A5ACD;
+		padding-top: 5px; /*Why is the padding for the top so big using regular padding.*/
+		padding-right: 20px;
+		padding-left: 20px;
+		padding-bottom: 5px;
+	 	display: flex;
+		/* period is for class and hashtag is for id https://forums.asp.net/t/1556629.aspx?what+does+this+mean+and+in+CSS+file+*/
+	}
+	
+	.left-align{
+		flex:2 1 200px; /*Fill up the available space, flex grow, flex shrink, flex basis*/
+		/*flex grow is the number of items that will grow, number  of items that will shrink*/
+	}
+	.center-align{
+		text-align: center;
+		margin: 5pt;
+	}
+	
+	.fifty-align{
+		padding-left: 22%;
+		padding-right: 22%;
+	}
+	
+	a:link{
+		text-decoration: none;
+		color: #CAC4ED;
+	}
+	
+	a:hover{
+		text-decoration: none;
+		border: 1px solid #CAC4ED;
+	}	
+	
+	a:visited{
+		color: #CAC4ED;
+	}
+	
+
+	.oval{
+		margin-left: auto;
+		margin-right: auto;
+		/* auto means giving remaining space, doing both right and lift auto centers the objct*/
+		text-align: center;
+		width: 210px;
+	    height: 25px;
+		border-color:#6A5ACD;
+		border-width: 1px;
+		border-style:solid;
+		/*You must define width and style for border to show up*/
+	    border-radius: 20px;
+	}
+	
+	button[type = "button"]{
+		background: #FFFFFF;
+		border: none;
+		outline: none;
+	}
+	
+	button[type = "button2"]{
+		background: #AFE1AF;
+	}
+	
+	input[type = "text"]{
+		border: none; /*Border is what is visible without clicking*/
+		outline: none; /*Ourline is what is visible when you click on the input box*/
+	}
+	
+	
+	h1{
+		text-align: center;
+		padding-top:100px;
+	}
+	
+	hr{
+		width:55%;
+		border-top-width: 1px;
+		background-color: #6A5ACD;
+		border-color: #6A5ACD;
+	}
+	.column-2{
+	text-align: left;
+	float: left;
+	width: 25%;
+	}
+
+</style>
+</head>
+
+<script>
+function getTiingoInfo(ticker){
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+				
+				var myObj = JSON.parse(this.responseText);
+				
+				if(myObj.result === "Fail"){
+					alert("This stock does not exists");
+					return false;
+				}
+				
+				var myObjToStr = JSON.stringify(myObj).replace(/null/g, '"-"');
+				myObj = JSON.parse(myObjToStr);
+				
+				if(sessionStorage.getItem("UID") === null){
+					var title = "<h1 id = \"stock-ticker\" class = \"center-align\">" + myObj.ticker + 
+					"</h1> <h2 id = \"stock-company\" class = \"center-align\">" + myObj.name + 
+				    "</h2><h3 id = \" stock-trade\" class = \"center-align\">" + myObj.exchangeCode + "</h3>" + "<p class = \"center-align\">Summary</p><hr class>";
+				    document.getElementById("tiingoBasicInfo").innerHTML = title;
+				    
+				    var desc = "<h3 style = \"text-align:center\">Company Description</h3>" + 
+				    "<p class = \"fifty-align\" id = \"company-desc\"> Start Date: " + myObj.startDate + 
+				    "<br></br>" + myObj.description + "<br></p>";
+				    document.getElementById("tiingoAdvInfo").innerHTML = desc;
+				}else{
+					//<button type="button" id = "starButton" onclick = "changeFavorite(myObj.ticker, myObj.name )"><i class="far fa-star"></i></button>
+					var title = "<section id = \"login-home\"><div style = \"margin-left: 20%; margin-right: 20%\">"
+						+ "<h1 id = \"stock-ticker\" style =\"margin:0; text-align:left\">" + myObj.ticker;
+					
+					if(sessionStorage.getItem(myObj.ticker) !== null){
+						title += "<button type=\"button\" id = \"starButton\" onclick = \"changeFavorite(\'" +myObj.ticker + "\',\'" 
+						+ myObj.name + "\')\"><i class=\"fas fa-star\" style = \"color:#FFFF00;font-size: 20px;\" ></i></button>";
+					}else{
+						title += "<button type=\"button\" id = \"starButton\" onclick = \"changeFavorite(\'" +myObj.ticker + "\',\'" 
+								+ myObj.name + "\')\"><i class=\"far fa-star\" style = \"font-size: 20px;\"></i></button>";
+					}
+					
+					var change = myObj.last - myObj.prevClose;
+					change = Math.round(change * 100) / 100;
+					var changePercent = (change * 100)/ myObj.prevClose;
+					changePercent = Math.round(changePercent * 100) / 100;
+					var color;
+					var date = new Date();
+					var options = { hour: 'numeric', minute: 'numeric', second: 'numeric'};
+					var percentStr;
+					if(change < 0){
+						color = "#fc3503";
+						percentStr = "<span style = \"float:right; color:" + color + "\" ><i class=\"fas fa-caret-down\" style = \"color:" + color + "\" ></i>" + change + "(" + changePercent +")%"+ "</span></h2>";
+					}else if(change > 0){
+						color = "#00cc66";
+						percentStr = "<span style = \"float:right; color:" + color + "\" ><i class=\"fas fa-caret-up\" style = \"color:" + color + "\" ></i>" + change + "(" + changePercent +")%"+ "</span></h2>";
+					}else{
+						color = "#000000";
+						percentStr = "<span style = \"float:right; color:" + color + "\><i class=\"fas fa-minus\" style = \"color:" + color + "\" ></i>" + change + "(" + changePercent +")%"+ "</span></h2>";
+					}
+					
+					sessionStorage.setItem("Price", myObj.last); 
+					
+					title += "<span style = \"float:right; color:" + color + "\" >"  +  myObj.last +"</span></h1>"
+						+ "<h2 id = \"stock-company\"  style = \"margin:0; text-align:left\">" + myObj.name
+						+ percentStr + "<p id = \"stock-trade\" style = \"margin:0\">" + myObj.exchangeCode
+						+ "<span style = \"float:right; id = \"date\">" + date.toLocaleDateString("en-US", options) +"</span></p>"
+						+ "<p> Quantity: <input type = \"text\" id = amount style=\"width:10pt; border: 1px solid #000000\"> "
+						+ "</p><button type = \"button2\" onclick = \"addToPortfolio(\'" + myObj.ticker +"\',\'" + myObj.name+"\')\"> Buy </button>";
+						document.getElementById("tiingoBasicInfo").innerHTML = title;
+						
+					var desc = "<div style = \"margin-left: 20%; margin-right: 20%\">" 
+						+ "<h3 style = \"text-align:center\">Company's Description</h3>"
+						+ "<p id = \"start-date\" style = \"text-align:left\">Start Date: " + myObj.startDate +"</p>"
+						+ "<p id = \"description\">" + myObj.description + "</p></d>";
+						+ "</div></section>";
+						document.getElementById("tiingoAdvInfo").innerHTML = desc;
+						
+						
+			
+				}
+				
+			}
+		}
+	}
+	xmlhttp.open("POST", "Home", true); //(method, url, asynchronous)
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	
+	var str = "&isLoggedIn=";
+	if(sessionStorage.getItem("UID") === null){
+		str += "false";
+	}else{
+		str += sessionStorage.getItem("UID");
+	}
+	
+	if(ticker === null){
+		xmlhttp.send("field=basicInfo&inp="+ document.getElementById("userInp").value + str); 
+	}else{
+		xmlhttp.send("field=basicInfo&inp="+ ticker + str); 
+		
+	}
+
+	//Form on submit redirecting to a empty servlet (default)
+}
+
+function getTiingoPrices(ticker){
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("POST", "Home", true); 
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === xmlhttp.DONE){
+			if(xmlhttp.status === 200){
+				
+				
+				var myObj = JSON.parse(this.responseText);
+				if(Object.keys(myObj).length === 0){
+					//sessionStorage.setItem("Noshow", "True");
+					//document.getElementById("tiingoPrices").innerHTML = "";
+					return false;
+				}
+				if(Array.isArray(myObj)){
+					myObj = myObj[0];
+				}
+				
+			
+				var init;
+				
+				if(myObj.result === "Fail"){
+					//Since getTiingoPrices and getTiingoInfo are both called, we only need to alert in one function
+					//alert("Error: could not process this stock");
+					return false;
+				}
+				
+				var myObjToStr = JSON.stringify(myObj).replace(/null/g, '"-"');
+				var options = { hour: 'numeric', minute: 'numeric', second: 'numeric'};
+				var lastTime = myObj.timestamp;
+				var currTime = new Date();
+		
+			
+				if(Math.abs(Date.parse(lastTime) - Date.parse(currTime)) > 60000){
+					//60000 millisecond is 60 seconds
+					
+					var newDate = new Date(Date.parse(lastTime));
+					newDate = newDate.toLocaleDateString("en-US", options)
+					//From page 11 in the assignment sheet, bidPrice will be null when the market is closed 
+					init = "<p style = \"text-align:center\"><span style=\"background-color: #ff6666\" id = \"Market\">Market is Closed " + newDate + "</span></p><p style = \"text-align:center\">Summary</p><hr></hr>";
+				
+				}else{
+					init = "<p style = \"text-align:center\"><span style=\"background-color: #ccffcc\" id = \"Market\">Market is Open</span></p><p style = \"text-align:center\">Summary</p><hr></hr>";
+			
+				}
+				myObj = JSON.parse(myObjToStr);
+				
+			
+				if(sessionStorage.getItem("UID") === null){
+					var highPrice = "<p style = \"text-align:center\">High Price: " + myObj.high + "<br>";
+					var lowPrice = "Low Price: " + myObj.low + "<br>";
+					var openPrice = "Open Price: " + myObj.open + "<br>";
+					var close = "Close: " + myObj.close  + "<br>";
+					var volume = "Volume: " + myObj.volume + 
+					"<br></p>";
+	
+					document.getElementById("tiingoPrices").innerHTML = highPrice + lowPrice + openPrice + close + volume;
+				}else{
+					var prices = "<div style = \"margin-left: 20%; margin-right: 20%\">" 
+						 + "<div style = \"text-align: center\"><div class = \"column-2\">High Price <br>Low Price </br>Open Price <br>Prev Close </br >Volume</div>"
+						+ "<div class = \"column-2\" id = \"info\">" + myObj.high +"<br>" + myObj.low + "</br>" + myObj.open + "<br>" + myObj.prevClose +"</br >" + myObj.volume + "</div>"
+						+ "<div class = \"column-2\">Mid Price <br>Ask Price </br>Ask Size <br>Bid Price </br >Bid Size</div>"
+						+ "<div class = \"column-2\" id = \"info-2\">"+myObj.mid+" <br>"+myObj.askPrice+"</br>"+myObj.askSize+" <br>"+myObj.bidPrice+"</br>"+myObj.bidSize+"</div>"
+						+ "</div><br> .</br></div>";
+					document.getElementById("tiingoPrices").innerHTML = init + prices;
+				}
+			}
+		}
+	}
+	
+	
+	if(ticker === null){
+		if(sessionStorage.getItem("UID") === null){
+			xmlhttp.send("field=advInfo&inp=" + document.getElementById("userInp").value + "&isLoggedIn=false"); 
+		}else{
+			xmlhttp.send("field=advInfo&inp=" + document.getElementById("userInp").value + "&isLoggedIn=" + sessionStorage.getItem("UID")); 
+		}
+		
+	
+	}else{
+		if(sessionStorage.getItem("UID") === null){
+			xmlhttp.send("field=advInfo&inp=" + ticker + "&isLoggedIn=false"); 
+		}else{
+			xmlhttp.send("field=advInfo&inp=" + ticker + "&isLoggedIn=" + sessionStorage.getItem("UID")); 
+		}
+		
+		
+	}
+}
+
+function changeFavorite(ticker, tickerName){
+
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("POST", "Home", true); 
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === xmlhttp.DONE){
+			if(xmlhttp.status === 200){
+				var myObj = JSON.parse(this.responseText);
+				if(myObj.result === "Added"){
+					sessionStorage.setItem(ticker, ticker);
+					alert("Added to Favorites");
+					document.getElementById("starButton").innerHTML = "<i class=\"fas fa-star\" style = \"color:#FFFF00;font-size: 20px;\" >";
+				}else if(myObj.result === "Deleted"){
+					sessionStorage.removeItem(ticker);
+					alert("Removed from Favorites");
+					document.getElementById("starButton").innerHTML = "<i class=\"far fa-star\" style = \"font-size: 20px;\">";
+				}
+			}
+		}
+	}
+	
+	xmlhttp.send("field=favorite&ticker=" + ticker + "&tickerName=" + tickerName + "&UID=" + sessionStorage.getItem("UID")); 
+	
+}
+
+function addToPortfolio(ticker, tickerName){
+	var amt = document.getElementById("amount").value;
+	var cost = sessionStorage.getItem("Price");
+	if(document.getElementById("amount").value === null || document.getElementById("amount").value <= '0'){
+		alert("FAILED: Please enter a valid amount of stock");
+		return false;
+	}
+	
+	if (!Number.isInteger(+document.getElementById("amount").value)){
+		alert("Please enter a integer value");
+		return false;
+	}
+	
+	
+	try{
+		if(document.getElementById("Market").innerHTML !== "Market is Open"){
+			alert("FAILED: Market is currently close, please try again later");
+			return false;
+		}
+	}catch(error){
+		alert("You cannot buy this stock, it is most likely delisted");
+	}
+
+	
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("POST", "Home", true); 
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === xmlhttp.DONE){
+			if(xmlhttp.status === 200){
+				var myObj = JSON.parse(this.responseText);
+				if(myObj.result === "Added"){
+					var total = amt*cost;
+					alert("SUCCESS: Purchase of " + amt + " shares of " + ticker + " for $" + total);
+				}else{
+					alert("FAILED: Error cannot add to portfolio");
+				}
+			}
+		}
+	}
+	xmlhttp.send("field=portfolio&ticker=" + ticker + "&tickerName=" + tickerName + "&UID=" + sessionStorage.getItem("UID") + "&quantity=" + amt + "&cost=" + cost); 
+}
+
+/*function checkIfFav(ticker){
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("POST", "Home", true); 
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === xmlhttp.DONE){
+			if(xmlhttp.status === 200){
+				var myObj = JSON.parse(this.responseText);
+				if(myObj.result === "Favorite"){
+					document.getElementById("starButton").innerHTML = "<i class=\"fas fa-star\" style = \"color:#FFFF00;font-size: 20px;\" >";
+				}else{
+					document.getElementById("starButton").innerHTML = "<i class=\"far fa-star\" style = \"font-size: 20px;\">";
+				}
+			}
+		}
+	}
+	xmlhttp.send("field=checkIfFav&ticker=" + ticker); 
+}*/
+
+function checkLogin(){
+	if(sessionStorage.getItem("UID") !== null){
+		var finalStr = "<a href = \"Home\" style = \"text-decoration: none; margin-right: 5px\">Home/Search</a>"
+		+"<a href = \"Favorite\" style = \"text-decoration: none; margin-right: 5px\">Favorite</a>"
+		+ "<a href = \"Portfolio\" style = \"text-decoration: none; margin-right: 5px\">Portfolio</a>"
+		+ "<a href = \"Login\" style = \"text-decoration: none;\">Logout</a>";
+		document.getElementById("changeableBar").innerHTML = finalStr;
+	}
+	
+	if(sessionStorage.getItem("ticker") === null){
+		var finalStr = "<h1>STOCK SEARCH</h1>"
+			+"<div class = \"oval\">"
+			+"<div class=\"search-bar\" method = \"post\"  name = \"inp\">"
+			  +"<input type=\"text\" placeholder=\"Enter stock ticker\" id = \"userInp\">"
+			  +"<button type=\"button\" onClick = \"getTiingoInfo(null); getTiingoPrices(null);\"><i class=\"fas fa-search\"></i></button>"
+			+"</div></div>";
+			document.getElementById("tiingoPrices").innerHTML = finalStr;
+	}
+	
+	if(sessionStorage.getItem("ticker") !== null){
+		
+		var tic = sessionStorage.getItem("ticker");
+		getTiingoPrices(tic);
+		getTiingoInfo(tic);
+		getTiingoPrices(tic);
+		sessionStorage.removeItem("ticker");
+		
+	}
+}
+</script>
+
+<!--This is a HTML comment-->
+<header>
+	<div class = "icon-bar" >
+		<div class = "left-align">
+		<a href = "Home" style = "color: #FFFFFF; " >SalStocks</a>
+		</div>
+
+		<div id = "changeableBar">
+			<a href = "Home" style = "margin-right: 5px" >Home/Search</a>
+			<a href = "Login" >Login/Sign Up</a>
+		</div>
+		<!--div is a section that is styled with CSS-->
+	</div>
+</header>
+
+<body  onload = "checkLogin()">
+	<div id = "tiingoBasicInfo"></div>
+	<div id = "tiingoPrices"></div>
+	<div id = "tiingoAdvInfo" ></div>
+
+</body>
+</html>

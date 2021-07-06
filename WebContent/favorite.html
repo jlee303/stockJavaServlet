@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SalStocks</title>
+<script src="https://kit.fontawesome.com/0d45b632d9.js" crossorigin="anonymous"></script>
+<style>
+	.icon-bar{
+			/*This is a CSS comment*/
+		text-decoration:none;
+		background-color: #6A5ACD;
+		padding-top: 5px; /*Why is the padding for the top so big using regular padding.*/
+		padding-right: 20px;
+		padding-left: 20px;
+		padding-bottom: 5px;
+		display: flex;
+			/* period is for class and hashtag is for id https://forums.asp.net/t/1556629.aspx?what+does+this+mean+and+in+CSS+file+*/
+	}
+
+	.left-align{
+		flex:2 1 200px; /*Fill up the available space, flex grow, flex shrink, flex basis*/
+	}
+
+	a:link{
+		text-decoration: none;
+		color: #CAC4ED;
+	}
+
+	a:hover{
+		text-decoration: none;
+		border: 1px solid #CAC4ED;
+	}
+
+	a:visited{
+		color: #CAC4ED;
+	}
+
+	.column{
+		margin-left: 25%;
+	}
+
+	button{
+		height:75px;
+		width:50%;
+		background-color: #FFFFFF;
+		border:1px solid #666699;
+		
+	}
+
+	button[type = "subbutton"]{
+		right:38%;
+		
+		position: absolute;
+	
+		outline:none;
+		border:none;
+		background-color: Transparent;
+		height: 19px;
+		width: 19px;
+		/*Question how to aligne*/
+	}
+
+</style>
+
+<script>
+function loadFavorites(){
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+				var favorites = JSON.parse(this.responseText);
+				document.getElementById("favorites").innerHTML = "";
+			
+				
+				if(favorites === null){
+					alert("There is no favorites to display");
+					return false;
+				}
+				for(var i = 0; i < favorites.length; i++){
+					var obj = favorites[i];
+					
+				
+					
+					var color;
+					var icon;
+					var change = obj.changeP;
+					change = change.substring(change.indexOf("(") + 1, change.indexOf(")") );
+				
+
+					if(change === "0.0"){
+						color = "#000000";
+						icon = "<i class=\"fas fa-minus\" style = \"color:" + color + "\" ></i>";
+					}else if(change > "0.0"){
+						color = "#00cc66";
+						icon = "<i class=\"fas fa-caret-up\" style = \"color:" + color + "\" ></i>";
+					}else if(change < "0.0"){
+						color = "#fc3503";
+						icon = "<i class=\"fas fa-caret-down\" style = \"color:" + color + "\" ></i>";
+					}
+					//console.log(color);
+					var finalStr = "<div id = \"" + obj.stockTicker + "\">";
+					finalStr += 	"<button type = \"subbutton\" onclick = \"deleteFavorite(\'"+ obj.stockTicker+"\')\">"
+					+"<i class=\"fas fa-times\"></i></button>"
+					+"<button onclick = \"seeDetails(\'" + obj.stockTicker + "\')\" >"
+						+"<h3 style =\"margin:0; text-align:left\">"
+							+ obj.stockTicker
+							+"<span style = \"float:right; color:" + color + "\">" 
+							+ obj.currentPrice
+							+"</span>"
+						+"</h3><br>"
+						+"<p style =\"margin:0; text-align:left\">"
+							+ obj.stockCompany
+							+"<span style = \"float:right; color:"+ color + "\">" + icon
+							+ obj.changeP
+							+"</span></p></button><br></br></div>";
+					document.getElementById("favorites").innerHTML += finalStr;
+				}
+			}
+		}
+	}
+	xmlhttp.open("POST", "Favorite", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.send("field=loadFavorites&UID=" + sessionStorage.getItem("UID")); 
+}
+
+function deleteFavorite(id){
+
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if(xmlhttp.readyState === 4){
+			if(xmlhttp.status === 200){
+				sessionStorage.removeItem(id);
+				document.getElementById(id).innerHTML = "";
+				loadFavorites();
+			}
+		}
+	}
+	xmlhttp.open("POST", "Favorite", true);
+	xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xmlhttp.send("field=deleteFavorite&id=" + id +"&UID=" + sessionStorage.getItem("UID"));
+	
+}
+
+function seeDetails(id){
+	
+	sessionStorage.setItem("ticker", id);
+	location.href = "Home";
+}
+</script>
+
+</head>
+
+<header>
+	<div class = "icon-bar" >
+		<div class = "left-align">
+		<a href = "Home" style = "color: #FFFFFF; " >SalStocks</a>
+		</div>
+
+		<div id = "changeableBar">
+			<a href = "Home" style = "margin-right: 5px" >Home/Search</a>
+			<a href = "Favorite" style = "margin-right: 5px" >Favorite</a>
+			<a href = "Portfolio" style = "margin-right: 5px" >Portfolio</a>
+			<a href = "Login" >Logout</a>
+		</div>
+	</div>
+</header>
+
+<body onload = "loadFavorites()">
+	<div class = "column">
+		<h2>My Favorites</h2>
+	</div>
+	<div id = "favorites" class = "column" >
+		
+	</div>
+</body>
+<html>
