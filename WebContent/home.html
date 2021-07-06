@@ -101,7 +101,7 @@ function getTiingoInfo(ticker){
 	xmlhttp.onreadystatechange = function(){
 		if(xmlhttp.readyState === 4){
 			if(xmlhttp.status === 200){
-				
+				console.log(this.responseText);
 				var myObj = JSON.parse(this.responseText);
 				
 				if(myObj.result === "Fail"){

@@ -92,7 +92,7 @@ public class Portfolio extends HttpServlet {
 						URLConnection tiingo = new URL(tiingoLink).openConnection();
 						BufferedReader in = new BufferedReader(new InputStreamReader(tiingo.getInputStream()));
 						String line = in.readLine();
-						int ind = line.indexOf("last");
+						int ind = line.indexOf("last\":");
 						if (ind != -1) {
 							line = line.substring(ind + 6, line.indexOf(",", ind));
 						}
@@ -141,7 +141,7 @@ public class Portfolio extends HttpServlet {
 				URLConnection tiingo = new URL(tiingoLink).openConnection();
 				BufferedReader in = new BufferedReader(new InputStreamReader(tiingo.getInputStream()));
 				String line = in.readLine();
-				int ind = line.indexOf("last");
+				int ind = line.indexOf("last\":");
 				line = line.substring(ind + 6, line.indexOf(",", ind));
 
 				double cp = Double.parseDouble(line);

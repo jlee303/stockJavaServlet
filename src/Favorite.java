@@ -69,9 +69,10 @@ public class Favorite extends HttpServlet {
 					URLConnection tiingo = new URL(tiingoLink).openConnection();
 					BufferedReader in = new BufferedReader(new InputStreamReader(tiingo.getInputStream()));
 					String line = in.readLine();
-					int ind = line.indexOf("last");
+					int ind = line.indexOf("last\":");
 
 					if (ind != -1) {
+						System.out.println(line);
 						last = Double.parseDouble(line.substring(ind + 6, line.indexOf(",", ind)));
 						ind = line.indexOf("prevClose");
 						prevClose = Double.parseDouble(line.substring(ind + 11, line.indexOf(",", ind)));
@@ -104,7 +105,7 @@ public class Favorite extends HttpServlet {
 							+ "\", \"changeP\": \"" + changeP + "\"},";
 
 				} catch (Exception e) {
-					System.out.println("An error has occured: " + e.getMessage());
+					System.out.println("An error has occured in Favoites: " + e.getMessage());
 				}
 
 			}

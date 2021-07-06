@@ -77,17 +77,20 @@ public class Home extends HttpServlet {
 				URLConnection tiingo = new URL(tiingoLink).openConnection();
 				BufferedReader in = new BufferedReader(new InputStreamReader(tiingo.getInputStream()));
 				String line = in.readLine();
-
+				// System.out.println(line);
 				String isLoggedIn = request.getParameter("isLoggedIn");
 				if (!isLoggedIn.equals("false")) {
 					// If the user is logged in, snip from D3 the information needed in the header
 					URLConnection tiingo1 = new URL(tiingoLink2).openConnection();
 					BufferedReader in1 = new BufferedReader(new InputStreamReader(tiingo1.getInputStream()));
 					String line2 = in1.readLine();
-					int ind = line2.indexOf("last");
+					int ind = line2.indexOf("last\":");
+					// System.out.println(ind);
 					if (ind != -1) {
 						line = line.substring(0, line.length() - 1);
 						line += ", \"last\":\"" + line2.substring(ind + 6, line2.indexOf(",", ind)) + "\"";
+						// System.out.println(line2);
+
 						ind = line2.indexOf("prevClose");
 						line += ", \"prevClose\":\"" + line2.substring(ind + 11, line2.indexOf(",", ind)) + "\"}";
 					}
@@ -102,6 +105,7 @@ public class Home extends HttpServlet {
 				if (isLoggedIn.equals("false")) {
 					// If the user is not logged in use tiingoLink1, which is D2 in the assignment
 					// page
+
 					URLConnection tiingo1 = new URL(tiingoLink1).openConnection();
 					BufferedReader in1 = new BufferedReader(new InputStreamReader(tiingo1.getInputStream()));
 					String line = in1.readLine();
